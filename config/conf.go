@@ -1,4 +1,4 @@
-package config
+package conf
 
 import (
 	"github.com/ShiinaAiiko/meow-whisper-core-sfu/typings"
@@ -6,6 +6,6 @@ import (
 )
 
 var (
-	Conf      = new(typings.Config)
+	Config    = new(typings.Config)
 	SfuConfig = new(sfu.Config)
 )

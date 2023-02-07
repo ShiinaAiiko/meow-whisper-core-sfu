@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ShiinaAiiko/meow-whisper-core-sfu/config"
+	conf "github.com/ShiinaAiiko/meow-whisper-core-sfu/config"
 	"github.com/ShiinaAiiko/meow-whisper-core-sfu/typings"
 	"github.com/cherrai/nyanyago-utils/nlog"
 	"github.com/pion/ion-sfu/pkg/sfu"
@@ -86,18 +86,18 @@ func LoadConfig() bool {
 
 	flag.StringVar(&file, "c", "config.toml", "config file")
 	flag.Parse()
-	config.Conf = load()
+	conf.Config = load()
 
-	config.SfuConfig = &sfu.Config{
+	conf.SfuConfig = &sfu.Config{
 		SFU: SFU{
-			Ballast:   config.Conf.SFU.Ballast,
-			WithStats: config.Conf.SFU.WithStats,
+			Ballast:   conf.Config.SFU.Ballast,
+			WithStats: conf.Config.SFU.WithStats,
 		},
-		WebRTC:        config.Conf.WebRTC,
-		Router:        config.Conf.Router,
-		Turn:          config.Conf.Turn,
-		BufferFactory: config.Conf.BufferFactory,
-		TurnAuth:      config.Conf.TurnAuth,
+		WebRTC:        conf.Config.WebRTC,
+		Router:        conf.Config.Router,
+		Turn:          conf.Config.Turn,
+		BufferFactory: conf.Config.BufferFactory,
+		TurnAuth:      conf.Config.TurnAuth,
 	}
-	return config.Conf == nil
+	return conf.Config == nil
 }

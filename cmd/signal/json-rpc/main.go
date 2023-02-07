@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ShiinaAiiko/meow-whisper-core-sfu/config"
+	conf "github.com/ShiinaAiiko/meow-whisper-core-sfu/config"
 	"github.com/ShiinaAiiko/meow-whisper-core-sfu/modules"
 	"github.com/cherrai/nyanyago-utils/nlog"
 	"github.com/gorilla/websocket"
@@ -67,8 +67,8 @@ func main() {
 		log.Info("config file does not exist.")
 		return
 	}
-	addr = ":" + strconv.FormatInt(config.Conf.SFU.Port, 10)
-	metricsAddr = ":" + strconv.FormatInt(config.Conf.Metrics.Port, 10)
+	addr = ":" + strconv.FormatInt(conf.Config.SFU.Port, 10)
+	metricsAddr = ":" + strconv.FormatInt(conf.Config.Metrics.Port, 10)
 
 	// Check that the -v is not set (default -1)
 	if verbosityLevel < 0 {
@@ -87,7 +87,7 @@ func main() {
 	// 	config.SfuConfig.Turn.Realm,
 	// )
 
-	s := sfu.NewSFU(*config.SfuConfig)
+	s := sfu.NewSFU(*conf.SfuConfig)
 
 	dc := s.NewDatachannel(sfu.APIChannelLabel)
 	dc.Use(datachannel.SubscriberAPI)
@@ -107,7 +107,7 @@ func main() {
 		}
 		defer c.Close()
 
-		if !modules.WSAuth() {
+		if !modules.WSAuth(r) {
 			return
 		}
 

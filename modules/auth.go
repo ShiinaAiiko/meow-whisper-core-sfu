@@ -1,71 +1,71 @@
 package modules
 
-func WSAuth() bool {
+import (
+	"encoding/json"
+	"net/http"
+	"net/url"
 
-	log.Warn("开始校验ws")
-	return true
+	conf "github.com/ShiinaAiiko/meow-whisper-core-sfu/config"
+	"github.com/cherrai/nyanyago-utils/nresponse"
+	"github.com/go-resty/resty/v2"
+)
+
+var (
+	request = resty.New()
+)
+
+type CustomData struct {
+	AppId  string
+	Uid    string
+	RoomId string
 }
 
-// var (
-// 	usersMap = map[string][]byte{}
-// )
+func WSAuth(r *http.Request) bool {
 
-// func longTermCredentials(username string, sharedSecret string) (string, error) {
-// 	mac := hmac.New(sha1.New, []byte(sharedSecret))
-// 	_, err := mac.Write([]byte(username))
-// 	if err != nil {
-// 		return "", err // Not sure if this will ever happen
-// 	}
-// 	password := mac.Sum(nil)
-// 	return base64.StdEncoding.EncodeToString(password), nil
-// }
+	u, _ := url.Parse(r.URL.String())
+	values := u.Query()
 
-// func GetTurnAuth(credentials, sharedSecret, realm string) func(username string, realm string, srcAddr net.Addr) ([]byte, bool) {
-// 	if len(usersMap) == 0 && sharedSecret == "" {
-// 		log.Error("No turn auth provided", "Got err")
-// 		return nil
-// 	}
+	log.Info("------------------开始校验------------------")
 
-// 	// config.SfuConfig.Turn.Auth.Credentials
-// 	for _, kv := range regexp.MustCompile(`(\w+)=(\w+)`).FindAllStringSubmatch(credentials, -1) {
-// 		// config.SfuConfig.Turn.Realm
-// 		usersMap[kv[1]] = turn.GenerateAuthKey(kv[1], realm, kv[2])
+	token := values.Get("token")
 
-// 		log.Info(kv, usersMap[kv[1]], string(usersMap[kv[1]]))
-// 	}
+	log.Info(token)
+	var customData CustomData
+	err := json.Unmarshal([]byte(values.Get("customData")), &customData)
+	if err != nil {
+		log.Error("err: ", err)
+		return false
+	}
+	// nlogger.Info(token, uid, customData)
+	if conf.Config.MeowWhisperCore.AppId != customData.AppId {
+		log.Error("Connection failed, appid is incorrect.")
+		return false
+	}
 
-// 	u, p, err := turn.GenerateLongTermCredentials(sharedSecret, 60*time.Second)
-// 	log.Error("err", u, p, err)
-// 	turnAuth := func(username string, realm string, srcAddr net.Addr) ([]byte, bool) {
-// 		log.Warn("开始校验turn")
-// 		log.Info(1, "TurnAuth", username, realm, srcAddr, usersMap[username])
+	res, err := request.R().SetFormData(map[string]string{
+		"appId":  conf.Config.MeowWhisperCore.AppId,
+		"appKey": conf.Config.MeowWhisperCore.AppKey,
+		"uid":    customData.Uid,
+		"roomId": customData.RoomId,
+		"token":  token,
+	}).Post(conf.Config.MeowWhisperCore.Url + "/api/v1/call/token/verify")
+	if err != nil {
+		log.Error(err)
+		return false
+	}
 
-// 		if sharedSecret != "" {
-// 			t, err := strconv.Atoi(username)
-// 			if err != nil {
-// 				log.Error("Invalid time-windowed username %q", username)
-// 				return nil, false
-// 			}
-// 			if int64(t) < time.Now().Unix() {
-// 				log.Error("Expired time-windowed username %q", username)
-// 				return nil, false
-// 			}
-// 			password, err := longTermCredentials(username, sharedSecret)
-// 			log.Info("这里开始校验密码", sharedSecret)
-// 			log.Info("password", password)
-// 			// 校验用户名有没有问题
-// 			// u, _, err := turn.GenerateLongTermCredentials(sharedSecret, 60*time.Second)
-// 			// log.Error("err", err)
-// 			return turn.GenerateAuthKey(username, realm, ""), true
-// 			// return nil, false
-// 		}
-// 		username = "meowWhisper"
-// 		log.Info(usersMap[username])
-// 		if key, ok := usersMap[username]; ok {
-// 			log.Info("ok", ok, "key", key)
-// 			return key, true
-// 		}
-// 		return nil, false
-// 	}
-// 	return turnAuth
-// }
+	var m nresponse.NResponse
+	err = json.Unmarshal([]byte(res.Body()), &m)
+	// log.Info(conf.Config.MeowWhisperCore.Url, m)
+	if err != nil {
+		log.Error("Unmarshal with error: %+v\n", err)
+		return false
+	}
+	if m.Code != 200 {
+		log.Error("Connection failed", m)
+		log.Error("Parameter:", token, customData)
+		return false
+	}
+	log.Info("Connection succeeded")
+	return true
+}
