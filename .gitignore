@@ -36,3 +36,4 @@ dump.rdb
 /protos/*.go
 !/protos/coding.go
 /protos_temp
+meow-whisper-sfu

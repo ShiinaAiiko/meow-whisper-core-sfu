@@ -1,6 +1,8 @@
 #! /bin/bash
 name="meow-whisper-sfu-server"
-port=(15302 15303 3478)
+sfuPort=15302
+metricsPort=15303
+turnPort=3478
 branch="main"
 configFilePath="config.pro.json"
 DIR=$(cd $(dirname $0) && pwd)
@@ -44,7 +46,9 @@ start() {
     -v $DIR/$configFilePath:/config.json \
     --name=$name \
     $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') \
-    -p $port:$port \
+    -p $sfuPort:$sfuPort \
+    -p $metricsPort:$metricsPort \
+    -p $turnPort:$turnPort/udp \
     --restart=always \
     -d $name
 }

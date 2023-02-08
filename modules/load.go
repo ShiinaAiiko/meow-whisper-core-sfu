@@ -23,7 +23,7 @@ const (
 func load() *typings.Config {
 	conf := new(typings.Config)
 
-	log.Info(file)
+	// log.Info(file)
 
 	if file == "" {
 		log.Info("config file does not exist.")

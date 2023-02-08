@@ -34,7 +34,7 @@ RUN \
 COPY . . 
 
 RUN \
-  go build -o meow-whisper-sfu main.go
+  go build -o meow-whisper-sfu ./cmd/signal/json-rpc/main.go
 
 FROM alpine:3.10
 
