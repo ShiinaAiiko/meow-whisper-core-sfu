@@ -58,7 +58,7 @@ func startMetrics(addr string) {
 
 	err = srv.Serve(metricsLis)
 	if err != nil {
-		log.Error(err, "Metrics server stopped")
+		log.Error(err, "Metrics server stopped1")
 	}
 }
 
