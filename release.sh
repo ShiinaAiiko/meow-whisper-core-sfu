@@ -34,7 +34,12 @@ start() {
   cp -r ~/.gitconfig $DIR
 
   echo "-> 准备构建Docker"
-  docker build -t $name $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') . -f Dockerfile.multi
+  docker build \
+    -t $name \
+    --network host \
+    $(cat /etc/hosts | sed 's/^#.*//g' | grep '[0-9][0-9]' | tr "\t" " " | awk '{print "--add-host="$2":"$1 }' | tr '\n' ' ') \
+    . \
+    -f Dockerfile.multi
   rm -rf $DIR/.ssh
   rm -rf $DIR/.gitconfig
   rm -rf $DIR/protos_temp
@@ -62,7 +67,7 @@ protos() {
   echo "-> 准备编译Protobuf"
   cp -r ../protos $DIR/protos_temp
   cd ./protos_temp && protoc --go_out=../protos *.proto
-  
+
   rm -rf $DIR/protos_temp
 
   echo "-> 编译Protobuf成功"
