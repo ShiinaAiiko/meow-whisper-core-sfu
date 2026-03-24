@@ -28,7 +28,7 @@ COPY go.mod \
   /app/
 
 RUN \
-  chmod -R 600 /root/.ssh/id_rsa && \ 
+  # chmod -R 600 /root/.ssh/id_rsa && \ 
   git config --global url."git@github.com:".insteadOf "https://github.com/" && \
   go mod download
 
